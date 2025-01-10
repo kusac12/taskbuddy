@@ -41,6 +41,8 @@ build/Release
 # Dependency directories
 client/node_modules/
 server/node_modules/
+server/serviceAccountKey.json
+client/firbase.js
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
