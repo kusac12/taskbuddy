@@ -1,7 +1,6 @@
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { ChevronUp } from 'lucide-react'
 import { TaskCard } from './task-card'
-
+import { ChevronUp } from 'lucide-react'
 
 interface Task {
   id: string

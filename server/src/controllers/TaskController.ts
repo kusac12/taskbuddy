@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { BaseController } from "./BaseController.js";
 import { TaskQueries } from "../utils/queries/TaskQueries.js";
-import { Task } from "../utils/types/index.js";
+import { Task, TaskUpdateLog } from "../utils/types/index.js";
 
 export class TaskController extends BaseController {
     private readonly taskQueries = new TaskQueries();
@@ -49,10 +49,10 @@ export class TaskController extends BaseController {
 
     async getUpdateHistory(c: Context) {
         try {
-            const { taskId } = await c.req.json();
-            const results: unknown[] = await this.taskQueries.execGetUpdateHistory(taskId);
-            const tasks = results as Task[];
-            return c.json(tasks, 200);
+            const taskId = c.req.param('id');
+            const results: unknown[] = await this.taskQueries.execGetUpdateHistory(parseInt(taskId));
+            const tasksLog = results as TaskUpdateLog[];
+            return c.json(tasksLog, 200);
         } catch (error) {
             return c.json({ message: (error as Error).message }, 400);
         }

@@ -15,7 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { MoreHorizontal, Plus } from 'lucide-react'
+import { MoreHorizontal, Plus, GripVertical } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import {
@@ -28,6 +28,7 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface Task {
   id: string
@@ -45,9 +46,18 @@ interface ListViewProps {
 
 interface DraggableTaskRowProps {
   task: Task
+  onTaskUpdate?: (updatedTask: Task) => void;
 }
 
-function DraggableTaskRow({ task }: DraggableTaskRowProps) {
+function DraggableTaskRow({ task, onTaskUpdate }: DraggableTaskRowProps) {
+  const handleCheckboxChange = (checked: boolean) => {
+    if (onTaskUpdate) {
+      onTaskUpdate({
+        ...task,
+        status: checked ? 'COMPLETED' : 'TO-DO',
+      });
+    }
+  };
   const {
     attributes,
     listeners,
@@ -62,20 +72,44 @@ function DraggableTaskRow({ task }: DraggableTaskRowProps) {
   }
 
   return (
+    <>
+    
     <div
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
-      className="bg-white/50 cursor-move"
+      // {...listeners}
+      className="bg-white cursor-ns-resize"
     >
-      <div className="grid grid-cols-[auto,1fr,auto,auto,auto] items-center gap-4 py-2 px-4">
-        <Checkbox />
+      
+      <div className="flex items-center gap-4 py-2 px-4">
+        <Checkbox
+          className='h-3 w-3 rounded-md'
+          checked={task.status === 'COMPLETED'}
+          onCheckedChange={handleCheckboxChange}
+        />
+        <GripVertical className='h-3 w-3' />
         <span className="text-sm">{task.title}</span>
         <span className="text-xs text-gray-500">{task.date}</span>
-        <div className="text-[11px] px-2 py-0.5 rounded bg-[#f8f8f8] text-gray-600 min-w-[100px] text-center">
-          {task.status}
-        </div>
+        <Popover>
+          <PopoverTrigger>
+            <Button variant="outline">Open popover</Button>
+          </PopoverTrigger>
+          <PopoverContent>
+          <div className="flex flex-col">
+              {['Work', 'Personal', 'Urgent'].map((option) => (
+                <Button
+                  key={option}
+                  variant="ghost"
+                  onClick={() => {}}
+                  className={`text-left ${true ? 'font-bold' : ''}`}
+                >
+                  {option}
+                </Button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
         <div className="flex items-center gap-4">
           <span className="text-xs text-gray-600">{task.category}</span>
           <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
@@ -84,17 +118,18 @@ function DraggableTaskRow({ task }: DraggableTaskRowProps) {
         </div>
       </div>
     </div>
+    </>
   )
 }
 
 export function ListView({ tasks, onTaskUpdate }: ListViewProps) {
-  const [newTask, setNewTask] = React.useState({
+  const [newTask, setNewTask] = React.useState<Pick<Task, 'title' | 'status' | 'category'>>({
     title: '',
-    status: 'TO-DO' as const,
-    category: 'Work' as const
+    status: 'TO-DO',
+    category: 'Work'
   })
   const [activeId, setActiveId] = React.useState<string | null>(null)
-  
+
   const todoTasks = tasks.filter(t => t.status === 'TO-DO')
   const inProgressTasks = tasks.filter(t => t.status === 'IN-PROGRESS')
   const completedTasks = tasks.filter(t => t.status === 'COMPLETED')
@@ -107,7 +142,7 @@ export function ListView({ tasks, onTaskUpdate }: ListViewProps) {
   const getStatusBgColor = (status: Task['status']) => {
     switch (status) {
       case 'TO-DO':
-        return 'bg-[#FFF0FF]'
+        return 'bg-[#FAC3FF]'
       case 'IN-PROGRESS':
         return 'bg-[#E6FBFF]'
       case 'COMPLETED':
@@ -117,11 +152,11 @@ export function ListView({ tasks, onTaskUpdate }: ListViewProps) {
 
   const handleDragEnd = (event: any) => {
     const { active, over } = event
-    
+
     if (over && active.id !== over.id) {
       const activeTask = tasks.find(t => t.id === active.id)
       const overTask = tasks.find(t => t.id === over.id)
-      
+
       if (activeTask && overTask && onTaskUpdate) {
         onTaskUpdate({
           ...activeTask,
@@ -129,7 +164,7 @@ export function ListView({ tasks, onTaskUpdate }: ListViewProps) {
         })
       }
     }
-    
+
     setActiveId(null)
   }
 
@@ -137,11 +172,11 @@ export function ListView({ tasks, onTaskUpdate }: ListViewProps) {
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
-      onDragStart={({active}) => setActiveId(active.id as string)}
+      onDragStart={({ active }) => setActiveId(active.id as string)}
       onDragEnd={handleDragEnd}
     >
       <Accordion type="multiple" defaultValue={['todo', 'in-progress', 'completed']} className="space-y-4">
-        <AccordionItem value="todo" className={`rounded-md ${getStatusBgColor('TO-DO')} border-none`}>
+        <AccordionItem value="todo" className={`${getStatusBgColor('TO-DO')} border-none rounded-lg`}>
           <AccordionTrigger className="px-4 hover:no-underline">
             <span className="text-xs font-medium">Todo ({todoTasks.length})</span>
           </AccordionTrigger>
@@ -157,7 +192,7 @@ export function ListView({ tasks, onTaskUpdate }: ListViewProps) {
                 />
                 <Select
                   value={newTask.status}
-                  onValueChange={(value: 'TO-DO' | 'IN-PROGRESS' | 'COMPLETED') => 
+                  onValueChange={(value: 'TO-DO' | 'IN-PROGRESS' | 'COMPLETED') =>
                     setNewTask({ ...newTask, status: value })
                   }
                 >
@@ -170,9 +205,10 @@ export function ListView({ tasks, onTaskUpdate }: ListViewProps) {
                     <SelectItem value="COMPLETED">COMPLETED</SelectItem>
                   </SelectContent>
                 </Select>
+                
                 <Select
                   value={newTask.category}
-                  onValueChange={(value: 'Work' | 'Personal') => 
+                  onValueChange={(value: 'Work' | 'Personal') =>
                     setNewTask({ ...newTask, category: value })
                   }
                 >
@@ -195,7 +231,7 @@ export function ListView({ tasks, onTaskUpdate }: ListViewProps) {
               </div>
               <SortableContext items={todoTasks} strategy={verticalListSortingStrategy}>
                 {todoTasks.map((task) => (
-                  <DraggableTaskRow key={task.id} task={task} />
+                  <DraggableTaskRow key={task.id} task={task} onTaskUpdate={onTaskUpdate} />
                 ))}
               </SortableContext>
             </div>
@@ -235,7 +271,7 @@ export function ListView({ tasks, onTaskUpdate }: ListViewProps) {
       <DragOverlay>
         {activeId ? (
           <div className="bg-white rounded-md shadow-lg">
-            <DraggableTaskRow 
+            <DraggableTaskRow
               task={tasks.find(t => t.id === activeId)!}
             />
           </div>

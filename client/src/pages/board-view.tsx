@@ -22,9 +22,9 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { TaskCard } from './task-card'
 import { Column } from './column'
 import { ListView } from './list-view'
-import { TaskCard } from './task-card'
 
 interface Task {
   id: string
@@ -95,9 +95,7 @@ export default function BoardView() {
   
   const sensors = useSensors(
     useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      // coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(KeyboardSensor)
   )
 
   return (

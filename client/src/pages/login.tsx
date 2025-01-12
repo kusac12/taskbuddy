@@ -1,15 +1,15 @@
 import { Button } from "@/components/ui/button"
-
 import { auth, googleProvider } from "../../firebase"
 import { signInWithPopup } from "firebase/auth"
-
+import React from "react";
+import { AuthContext } from "@/context/authContext";
 
 
 export default function Login() {
+    const { login } = React.useContext(AuthContext);
     async function handleOnClick() {
-        const result = await signInWithPopup(auth, googleProvider);
+        /* const result = await signInWithPopup(auth, googleProvider);
         const token = await result.user.getIdToken();
-        console.log(token);
         const response = await fetch("http://localhost:3000/taskbuddy/api/user/auth", {
             method: "POST",
             headers: {
@@ -19,6 +19,9 @@ export default function Login() {
         });
         const responseData = await response.json();
         console.log(responseData);
+        if(responseData) { */
+            login();
+        // }
     }
     return (
         <div className="flex min-h-screen overflow-hidden">

@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { EditTaskDialog } from '@/components/edit-task-dialog'
+import { EditTaskDialog } from './edit-task-dialog'
 
 interface Task {
   id: string
@@ -14,13 +14,13 @@ interface Task {
   category: 'Work' | 'Personal'
 }
 
-interface ListCardProps {
-  task?: Task
+interface TaskCardProps {
+  task: Task
   isDragging?: boolean
   onUpdate?: (task: Task) => void
 }
 
-export function TaskCard({ task, isDragging = false, onUpdate }: ListCardProps) {
+export function TaskCard({ task, isDragging = false, onUpdate }: TaskCardProps) {
   const [isEditing, setIsEditing] = React.useState(false)
   
   const {
@@ -29,7 +29,7 @@ export function TaskCard({ task, isDragging = false, onUpdate }: ListCardProps) 
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id: task?.id })
+  } = useSortable({ id: task.id })
 
   const style = {
     transform: CSS.Transform.toString(transform),
